@@ -1,0 +1,8 @@
+# Content backend: no folder listings, never indexed, library file never served directly
+Options -Indexes
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+</IfModule>
+<Files "lib.php">
+  Require all denied
+</Files>

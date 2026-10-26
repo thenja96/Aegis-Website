@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1AB191"/>
+      <stop offset=".45" stop-color="#1AB191"/>
+      <stop offset="1" stop-color="#0E6BB4"/>
+    </linearGradient>
+  </defs>
+  <!-- Peak: upper triangle of the Aegis mark -->
+  <path d="M100 6 L160 78 Q118 70 72 86 Z" fill="url(#g)"/>
+  <!-- Sweep: lower band of the mark -->
+  <path d="M8 154 Q96 44 192 150 L148 150 Q100 98 44 150 Z" fill="url(#g)" opacity=".92"/>
+</svg>
