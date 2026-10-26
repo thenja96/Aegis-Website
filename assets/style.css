@@ -1173,3 +1173,17 @@ a[href^="tel:"]{white-space:nowrap}
 
 /* Discourage casual image saving: no drag-out, no long-press save menu on phones */
 img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select:none}
+
+/* Home closing band, compact: headline left as one flowing paragraph, sentence and button right */
+.band-cta{padding:var(--s7) 0}
+.band-cta .container{display:grid;grid-template-columns:1.35fr 1fr;gap:var(--s4) var(--s7);align-items:end}
+.band-cta h2{grid-row:1 / span 2;font-size:clamp(1.7rem,2.8vw,2.4rem);line-height:1.15;max-width:22ch;margin:0}
+.band-cta h2 span{display:inline}
+.band-cta p{margin:0}
+.band-cta .btn{justify-self:start}
+@media (max-width:768px){
+  .band-cta{padding:var(--s6) 0}
+  .band-cta .container{grid-template-columns:1fr;gap:var(--s3)}
+  .band-cta h2{grid-row:auto;font-size:1.65rem}
+  .band-cta .btn{margin-top:var(--s2)}
+}
