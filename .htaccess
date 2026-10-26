@@ -1,0 +1,7 @@
+# Aegis website: error page, and keep build sources and repo files off the web
+ErrorDocument 404 /404.html
+Options -Indexes
+RedirectMatch 404 ^/(_src|_work|\.git)(/|$)
+<FilesMatch "^(README\.md|\.gitignore|\.gitattributes)$">
+  Require all denied
+</FilesMatch>

@@ -48,6 +48,17 @@ To change the navigation or footer, edit `NAV`, `header()` or `footer()` in `_sr
 5. Send a test enquiry from the contact page and confirm the email arrives. If PHP `mail()` is disabled on the hosting, switch `contact.php` to the hosting's SMTP relay or a form service.
 6. Submit `https://www.aegiscomm.com.my/sitemap.xml` in Google Search Console.
 
+## Deploying from GitHub (Plesk Git)
+
+The code lives in the private repository https://github.com/thenja96/Aegis-Website.
+
+1. Plesk, Websites & Domains, the domain, **Git**. Add a remote repository with `https://github.com/thenja96/Aegis-Website.git`. A private repository needs access: use the SSH key Plesk shows, added under the repository's Settings, Deploy keys (read-only), and the SSH address `git@github.com:thenja96/Aegis-Website.git`.
+2. Deployment mode: **Manual** (deploy on button press). Deployment path: `httpdocs`.
+3. Turn on **Enable additional deployment actions** and enter `php aegis/republish.php`. A deploy copies the repository's pages over the live ones; this re-applies the edits saved in the backend.
+4. Press **Deploy**. The root `.htaccess` sets the 404 page and blocks `_src/`, `.git` and `README.md` from the web.
+
+After changing pages locally: run `python _src/build.py`, commit, push, then press Deploy in Plesk.
+
 ## Content backend (`/aegis`)
 
 A small PHP admin at `https://www.aegiscomm.com.my/aegis/` for changing text, page titles, image descriptions and images, and for reading contact-form enquiries. Nothing on the public site links to it. Content is stored in files, no database.
