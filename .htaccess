@@ -5,3 +5,13 @@ RedirectMatch 404 ^/(_src|_work|\.git)(/|$)
 <FilesMatch "^(README\.md|\.gitignore|\.gitattributes)$">
   Require all denied
 </FilesMatch>
+
+# Hotlink protection: other websites cannot embed our photos and logos.
+# Visits with no referrer (typing the address, some privacy browsers) are still allowed.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_REFERER} !^$
+  RewriteCond %{HTTP_REFERER} !^https?://([a-z0-9-]+\.)*aegiscomm\.com\.my/ [NC]
+  RewriteCond %{HTTP_REFERER} !^https?://(www\.)?google\.[a-z.]+/ [NC]
+  RewriteRule ^assets/(photos|team|clients|network)/.+\.(jpe?g|png|webp)$ - [F,NC]
+</IfModule>

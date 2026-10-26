@@ -1170,3 +1170,6 @@ a[href^="tel:"]{white-space:nowrap}
 @media (min-width:600px) and (max-width:768px){ .team{grid-template-columns:1fr 1fr;gap:var(--s5) var(--s4)} .person .headshot,.person .avatar{width:88px;height:88px} }
 .mobile-cta{transition:transform .25s ease}
 .mobile-cta.is-away{transform:translateY(110%)}
+
+/* Discourage casual image saving: no drag-out, no long-press save menu on phones */
+img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select:none}

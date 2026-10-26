@@ -406,3 +406,10 @@
   });
   spots.forEach(function (s) { io.observe(s); });
 })();
+
+// Discourage casual image saving: no right-click menu or drag on images (the rest of the page is untouched)
+(function () {
+  function onImg(e) { return e.target && (e.target.tagName === 'IMG' || (e.target.closest && e.target.closest('picture, .frame, .thumb, .team-hero-img'))); }
+  document.addEventListener('contextmenu', function (e) { if (onImg(e)) e.preventDefault(); });
+  document.addEventListener('dragstart', function (e) { if (onImg(e)) e.preventDefault(); });
+})();
