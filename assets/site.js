@@ -413,3 +413,11 @@
   document.addEventListener('contextmenu', function (e) { if (onImg(e)) e.preventDefault(); });
   document.addEventListener('dragstart', function (e) { if (onImg(e)) e.preventDefault(); });
 })();
+
+// Jump links: drop links to sections that are switched off in the backend
+(function () {
+  document.querySelectorAll('.subnav a[href^="#"]').forEach(function (a) {
+    var t = document.getElementById(a.getAttribute('href').slice(1));
+    if (t && t.closest('[hidden]')) a.remove();
+  });
+})();

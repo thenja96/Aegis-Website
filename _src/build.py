@@ -278,6 +278,7 @@ def wrap(meta, body, rel):
 <link rel="preload" href="{rel}assets/fonts/newsreader-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{rel}assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{rel}assets/style.css?v={v}">
+<link rel="stylesheet" href="{rel}assets/theme.css">
 {jsonld()}
 </head>
 <body{" class=" + chr(34) + "home" + chr(34) if path == "index.html" else ""}>
@@ -307,12 +308,12 @@ def build():
         rel = "../" * depth
         out = os.path.join(ROOT, meta["path"])
         os.makedirs(os.path.dirname(out), exist_ok=True)
-        page, items, images = cms.mark(wrap(meta, body, rel), meta["path"])
+        page, items, images, sections = cms.mark(wrap(meta, body, rel), meta["path"])
         # backend edits (aegis/data/content.php) are re-applied so a rebuild never loses them
         page = cms.apply(page, meta["path"], rel, items, store)
         open(out, "w", encoding="utf-8").write(page)
         manifest.append({"path": meta["path"], "title": meta["title"], "description": meta["description"],
-                         "items": [i for i in items if i["scope"] != "*"], "images": images})
+                         "items": [i for i in items if i["scope"] != "*"], "images": images, "sections": sections})
         for i in items:
             if i["scope"] == "*":
                 site_items.setdefault(i["k"], i)

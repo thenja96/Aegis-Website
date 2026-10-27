@@ -1187,3 +1187,5 @@ img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select
   .band-cta h2{grid-row:auto;font-size:1.65rem}
   .band-cta .btn{margin-top:var(--s2)}
 }
+/* sections switched off in the backend */
+[hidden]{display:none !important}

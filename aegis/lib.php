@@ -91,6 +91,14 @@ function apply_page(string $doc, array $page, array $store): string {
             return preg_match('/\salt="/', $m[0]) ? preg_replace('/\salt="[^"]*"/', ' alt="' . $alt . '"', $m[0]) : str_replace('<img', '<img alt="' . $alt . '"', $m[0]);
         }, $doc);
     }
+    // every section is set from the store, so switching one back on removes its hidden flag
+    $off = $store['sections'][$page['path']] ?? [];
+    foreach ($page['sections'] ?? [] as $sec) {
+        $hide = ($off[$sec['k']] ?? true) === false;
+        $doc = preg_replace_callback('/(<section\b[^>]*\sdata-s="' . $sec['k'] . '")([^>]*)>/', function ($m) use ($hide) {
+            return $m[1] . preg_replace('/\shidden\b/', '', $m[2]) . ($hide ? ' hidden' : '') . '>';
+        }, $doc);
+    }
     foreach (($store['imgver'] ?? []) as $src => $ver) {
         $doc = preg_replace('/((?:\.\.\/)*' . preg_quote($src, '/') . ')(?:\?v=\d+)?(?=["\')\s,])/', '${1}?v=' . (int) $ver, $doc);
     }
@@ -101,6 +109,7 @@ function apply_page(string $doc, array $page, array $store): string {
 function publish_all(): array {
     $store = store_read('content');
     $failed = [];
+    if (@file_put_contents(SITE_ROOT . '/assets/theme.css', theme_css($store['design'] ?? []), LOCK_EX) === false) $failed[] = 'assets/theme.css';
     foreach (manifest()['pages'] as $page) {
         $file = SITE_ROOT . '/' . $page['path'];
         $doc = @file_get_contents($file);
@@ -217,3 +226,41 @@ function note_attempt(string $ip, bool $ok): void {
 }
 
 function h($s): string { return htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8'); }
+
+// ---------- design settings -> assets/theme.css ----------
+
+const DESIGN_DEFAULTS = ['navy' => '#0F172A', 'blue' => '#0E6BB4', 'teal' => '#1AB191', 'size' => 'medium', 'head' => 'serif', 'buttons' => 'square'];
+
+function design(array $d): array {
+    $out = DESIGN_DEFAULTS;
+    foreach (['navy', 'blue', 'teal'] as $c) if (isset($d[$c]) && preg_match('/^#[0-9a-fA-F]{6}$/', $d[$c])) $out[$c] = strtoupper($d[$c]);
+    if (in_array($d['size'] ?? '', ['small', 'medium', 'large'], true)) $out['size'] = $d['size'];
+    if (in_array($d['head'] ?? '', ['serif', 'sans'], true)) $out['head'] = $d['head'];
+    if (in_array($d['buttons'] ?? '', ['square', 'rounded'], true)) $out['buttons'] = $d['buttons'];
+    return $out;
+}
+
+// mix a colour toward black (amount < 0) or white (amount > 0)
+function shade(string $hex, float $amount): string {
+    $rgb = array_map('hexdec', str_split(ltrim($hex, '#'), 2));
+    $t = $amount < 0 ? 0 : 255;
+    $a = abs($amount);
+    return sprintf('#%02X%02X%02X', ...array_map(fn($v) => (int) round($v + ($t - $v) * $a), $rgb));
+}
+
+function theme_css(array $raw): string {
+    $d = design($raw);
+    $css = "/* Design settings from the content backend (/aegis, Design). Written by the backend; leave empty here. */\n";
+    if ($d == DESIGN_DEFAULTS) return $css;
+    $css .= ':root{';
+    if ($d['navy'] !== DESIGN_DEFAULTS['navy']) $css .= '--navy:' . $d['navy'] . ';--ink:' . $d['navy'] . ';--navy-2:' . shade($d['navy'], .06) . ';';
+    if ($d['blue'] !== DESIGN_DEFAULTS['blue']) $css .= '--blue:' . $d['blue'] . ';--blue-deep:' . $d['blue'] . ';--aud-plc:' . $d['blue'] . ';';
+    if ($d['teal'] !== DESIGN_DEFAULTS['teal']) $css .= '--teal:' . $d['teal'] . ';--teal-bright:' . $d['teal'] . ';--green:' . $d['teal'] . ';--aud-ipo:' . $d['teal'] . ';--teal-text:' . shade($d['teal'], -.42) . ';';
+    if ($d['blue'] !== DESIGN_DEFAULTS['blue'] || $d['teal'] !== DESIGN_DEFAULTS['teal']) $css .= '--grad:linear-gradient(90deg,' . shade($d['teal'], -.2) . ' 0%,' . $d['blue'] . ' 100%);';
+    if ($d['head'] === 'sans') $css .= '--font-head:"Inter",Arial,Helvetica,sans-serif;';
+    $css .= "}\n";
+    if ($d['size'] !== 'medium') $css .= 'html{font-size:' . ($d['size'] === 'small' ? '93.75%' : '106.25%') . "}\n";
+    if ($d['head'] === 'sans') $css .= "h1,h2,h3,.quote{letter-spacing:-.025em;font-weight:600}\n";
+    if ($d['buttons'] === 'rounded') $css .= ".btn,.nav .btn{border-radius:10px}\n";
+    return $css;
+}

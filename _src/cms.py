@@ -184,7 +184,45 @@ def mark(page_html, path):
             continue
         cut = se - (2 if start_tag.endswith("/>") else 1)
         out = out[:cut] + f' {attr}="{k}"' + out[cut:]
-    return out, items, images
+    out, sections = mark_sections(out, path)
+    return out, items, images, sections
+
+
+def mark_sections(doc, path):
+    """Give each page section a stable data-s key, named after its first heading or label."""
+    m0 = doc.find("<main")
+    m1 = doc.find("</main>")
+    if m0 < 0 or m1 < 0:
+        return doc, []
+    sections, used, edits = [], {}, []
+    for m in re.finditer(r"<section\b([^>]*)>", doc[m0:m1]):
+        start = m0 + m.start()
+        attrs = m.group(1)
+        if re.search(r'class="[^"]*\bhero\b', attrs):
+            continue
+        end = doc.find("</section>", start)
+        chunk = doc[start:end if end > 0 else m1]
+        h = re.search(r"<h[12]\b[^>]*>(.*?)</h[12]>", chunk, flags=re.S)
+        e = re.search(r'class="eyebrow[^"]*"[^>]*>(.*?)</span>', chunk, flags=re.S)
+        name = text_of(h.group(1)) if h else (text_of(e.group(1)) if e else "")
+        label = text_of(e.group(1)) if e else ""
+        if not name and not label:
+            # unnamed sections: describe them by what they contain
+            for pat, what in ((r'class="stats', "Key numbers"), (r'class="team\b', "Team list"),
+                              (r'<form\b', "Contact form"), (r'class="photo-grid', "Photos"),
+                              (r"<h3\b", "")):
+                if re.search(pat, chunk):
+                    name = what or text_of(re.search(r"<h3\b[^>]*>(.*?)</h3>", chunk, flags=re.S).group(1))
+                    break
+        name = name or label or "Section"
+        n = used.get(name, 0)
+        used[name] = n + 1
+        k = key(path + "|" + name + "|" + str(n))
+        edits.append((start + len("<section"), k))
+        sections.append({"k": k, "name": name, "label": label if label != name else ""})
+    for pos, k in reversed(edits):
+        doc = doc[:pos] + f' data-s="{k}"' + doc[pos:]
+    return doc, sections
 
 
 # ---------- applying saved edits (mirrors aegis/lib.php) ----------
@@ -233,6 +271,9 @@ def apply(page_html, path, rel, items, store):
         doc = re.sub(r'(<img\b[^>]*\sdata-i="' + ik + r'"[^>]*>)',
                      lambda m: re.sub(r'\salt="[^"]*"', f' alt="{a}"', m.group(1)) if " alt=" in m.group(1)
                      else m.group(1).replace("<img", f'<img alt="{a}"', 1), doc)
+    for k, shown in store.get("sections", {}).get(path, {}).items():
+        if shown is False:
+            doc = re.sub(r'(<section\b[^>]*\sdata-s="' + k + r'")([^>]*)>', lambda m: m.group(1) + re.sub(r"\shidden\b", "", m.group(2)) + " hidden>", doc)
     for src, ver in store.get("imgver", {}).items():
         doc = re.sub(r"((?:\.\./)*" + re.escape(src) + r")(?:\?v=\d+)?(?=[\"')\s,])", r"\1?v=" + str(ver), doc)
     return doc

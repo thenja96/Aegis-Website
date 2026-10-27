@@ -137,6 +137,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         go($back, $changed ? 'Saved and published. ' . $changed . ' change' . ($changed > 1 ? 's' : '') . ' now live.' : 'No changes to save.');
     }
 
+    if ($act === 'design') {
+        $store = store_read('content');
+        if (!empty($_POST['reset_design'])) unset($store['design']);
+        else {
+            $d = design([
+                'navy' => $_POST['navy'] ?? '', 'blue' => $_POST['blue'] ?? '', 'teal' => $_POST['teal'] ?? '',
+                'size' => $_POST['size'] ?? '', 'head' => $_POST['head'] ?? '', 'buttons' => $_POST['buttons'] ?? '',
+            ]);
+            if ($d == DESIGN_DEFAULTS) unset($store['design']); else $store['design'] = $d;
+        }
+        // sections: a ticked box means shown; only store the ones switched off
+        $store['sections'] = [];
+        foreach (manifest()['pages'] as $pg) {
+            foreach ($pg['sections'] ?? [] as $sec) {
+                if (empty($_POST['show'][$pg['path']][$sec['k']])) $store['sections'][$pg['path']][$sec['k']] = false;
+            }
+        }
+        if (!$store['sections']) unset($store['sections']);
+        $store['imgver']['assets/theme.css'] = time();
+        store_write('content', $store);
+        $failed = publish_all();
+        if ($failed) go('p=design', 'Saved, but these files could not be written (check permissions): ' . implode(', ', $failed), 'err');
+        go('p=design', 'Design saved and published.');
+    }
+
     if ($act === 'image_alt') {
         $k = (string) ($_POST['k'] ?? '');
         $img = find_image($k);
@@ -239,7 +264,7 @@ function page_start(string $title, bool $nav = true, string $active = ''): void 
        . '<link rel="stylesheet" href="admin.css?v=' . filemtime(__DIR__ . '/admin.css') . '"></head><body class="' . ($nav ? 'app' : 'plain') . '">';
     if (!$nav) { echo '<main class="solo"><div class="auth-brand"><img class="logo" src="logo-light.png" alt="Aegis Communication"></div>'; return; }
     $unread = count(array_filter(enquiries(), fn($e) => ($e['state'] ?? '') === 'new'));
-    $groups = ['Content' => ['dashboard' => 'Dashboard', 'pages' => 'Pages', 'site' => 'Menu and footer', 'images' => 'Images'],
+    $groups = ['Content' => ['dashboard' => 'Dashboard', 'pages' => 'Pages', 'site' => 'Menu and footer', 'images' => 'Images', 'design' => 'Design'],
                'Inbox' => ['enquiries' => 'Enquiries'], 'Settings' => ['account' => 'Account', 'guide' => 'User guide']];
     echo '<aside class="side"><a class="brand" href="./"><img class="logo" src="logo-light.png" alt="Aegis Communication"></a><nav>';
     foreach ($groups as $g => $links) {
@@ -389,6 +414,48 @@ if ($p === 'site') {
     page_end();
 }
 
+if ($p === 'design') {
+    $store = store_read('content');
+    $d = design($store['design'] ?? []);
+    $off = $store['sections'] ?? [];
+    $radio = function (string $name, array $opts) use ($d) {
+        $h = '<div class="choices">';
+        foreach ($opts as $v => $label) $h .= '<label class="choice"><input type="radio" name="' . $name . '" value="' . $v . '"' . ($d[$name] === $v ? ' checked' : '') . '><span>' . $label . '</span></label>';
+        return $h . '</div>';
+    };
+    page_start('Design', true, 'design');
+    echo '<p class="note">Change the look of the whole website. Press <b>Save and publish</b> and the changes go live straight away. <b>Reset design</b> returns to the original look.</p>';
+    echo '<form method="post" id="design">' . csrf_field() . '<input type="hidden" name="action" value="design">';
+    echo '<div class="savebar"><span class="status">Changes apply to every page</span><button class="ghost" name="reset_design" value="1" data-confirm-click="Reset colours, text size, heading font and buttons to the original design?">Reset design</button><button class="btn">Save and publish</button></div>';
+
+    echo '<section class="group"><h2>Brand colours</h2><p class="hint">Used for headings, dark sections, links, buttons and accent lines. Pick a colour or type a code such as #0E6BB4.</p><div class="swatches">';
+    foreach (['navy' => ['Dark', 'Dark sections, headings and the footer'], 'blue' => ['Blue', 'Links and the blue end of buttons and lines'], 'teal' => ['Teal', 'Labels and the green end of buttons and lines']] as $k => [$label, $help]) {
+        echo '<label class="swatch"><span class="name">' . $label . '</span><span class="pick"><input type="color" value="' . h($d[$k]) . '" data-for="' . $k . '"><input name="' . $k . '" value="' . h($d[$k]) . '" pattern="#[0-9A-Fa-f]{6}" maxlength="7" spellcheck="false"></span><small>' . $help . '</small></label>';
+    }
+    echo '</div><div class="preview" id="preview"><span class="pv-dark">Dark section</span><span class="pv-label">Section label</span><a class="pv-link">A text link</a><span class="pv-btn">Contact us →</span><span class="pv-line"></span></div></section>';
+
+    echo '<section class="group"><h2>Text</h2><div class="opts"><div><h3>Text size</h3>' . $radio('size', ['small' => 'Small', 'medium' => 'Medium', 'large' => 'Large']) . '</div>'
+       . '<div><h3>Heading font</h3>' . $radio('head', ['serif' => '<span class="f-serif">Serif</span>', 'sans' => '<span class="f-sans">Sans serif</span>']) . '</div>'
+       . '<div><h3>Button corners</h3>' . $radio('buttons', ['square' => 'Square', 'rounded' => 'Rounded']) . '</div></div></section>';
+
+    echo '<section class="group"><h2>Sections on each page</h2><p class="hint">Untick a section to remove it from the page. Nothing is deleted; tick it again to bring it back. The top banner of each page always stays.</p>';
+    $order = ['index.html', 'about.html', 'people.html', 'approach.html', 'track-record.html', 'services/investor-relations.html', 'services/public-relations.html', 'services/ipo-communications.html', 'services/events.html', 'services/creative-digital.html', 'contact.html'];
+    $pages = array_filter(manifest()['pages'], fn($pg) => !empty($pg['sections']));
+    usort($pages, fn($a, $b) => (array_search($a['path'], $order) === false ? 99 : array_search($a['path'], $order)) <=> (array_search($b['path'], $order) === false ? 99 : array_search($b['path'], $order)));
+    foreach ($pages as $pg) {
+        $name = $pg['path'] === 'index.html' ? 'Home' : preg_replace('/\s*\|.*$/', '', $pg['title']);
+        $hidden = count($off[$pg['path']] ?? []);
+        echo '<details class="secpage"' . ($hidden ? ' open' : '') . '><summary><b>' . h($name) . '</b><span>' . count($pg['sections']) . ' sections' . ($hidden ? ', ' . $hidden . ' hidden' : '') . '</span></summary><ul>';
+        foreach ($pg['sections'] as $sec) {
+            $on = !isset($off[$pg['path']][$sec['k']]);
+            echo '<li><label><input type="checkbox" name="show[' . h($pg['path']) . '][' . $sec['k'] . ']" value="1"' . ($on ? ' checked' : '') . '> <span>' . h($sec['name']) . '</span>' . ($sec['label'] ? ' <small>' . h($sec['label']) . '</small>' : '') . '</label></li>';
+        }
+        echo '</ul></details>';
+    }
+    echo '</section></form>';
+    page_end();
+}
+
 if ($p === 'images') {
     $store = store_read('content');
     $imgs = [];
@@ -464,6 +531,7 @@ if ($p === 'guide') {
     <p><b>Hide</b> removes the item from the website without deleting it. Untick it to bring it back. <b>Reset to original</b> puts back the wording the site was built with.</p>
     <p>Some boxes are grey and locked. They contain icons or layout that the editor cannot keep, so they are changed by your developer.</p>
     <p>Text that appears more than once on a page, such as a button label, is edited once and updates everywhere on that page.</p>
+    <h2>Design</h2><p>Under <b>Design</b> you can change the three brand colours, the text size, the heading font (serif or sans serif) and the button corners for the whole site, and switch whole sections of any page off or on. A small preview shows the colours before you save. <b>Reset design</b> returns to the original look; sections you switched off are not affected by reset.</p>
     <h2>Menu and footer</h2><p>Top menu labels, footer text, office address and phone number are the same on every page, so they are edited once under <b>Menu and footer</b>, split into Top menu and Footer. Words used in both, such as a service name, are one box: changing it updates the menu and the footer together.</p>
     <h2>Search and sharing</h2><p>Each page has a title and a short description at the top of its editor. Google shows these in search results. Keep the title under 60 characters and the description under 160.</p>
     <h2>Photos and logos</h2><p>Under <b>Images</b>, grouped into team portraits, photos and logos, upload a replacement for any photo or logo. It keeps its place and size on the site. For team portraits use a square, head-and-shoulders photo with a plain background, at least 600 × 600 pixels. The description field is read aloud by screen readers; describe the person or the logo in a few words.</p>

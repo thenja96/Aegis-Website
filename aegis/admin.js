@@ -53,6 +53,33 @@
   var on = document.querySelector('.side nav a.on');
   if (on && on.parentNode.scrollWidth > on.parentNode.clientWidth) on.parentNode.scrollLeft = on.offsetLeft - 16;
 
+  // Design screen: keep colour pickers and code boxes in step, and update the preview live
+  var design = document.getElementById('design');
+  if (design) {
+    var hex = /^#[0-9a-f]{6}$/i;
+    function mix(c, t, a) { var n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return 'rgb(' + [r, g, b].map(function (v) { return Math.round(v + (t - v) * a); }).join(',') + ')'; }
+    function paint() {
+      var pv = document.getElementById('preview'), v = {};
+      ['navy', 'blue', 'teal'].forEach(function (k) { v[k] = design.querySelector('input[name=' + k + ']').value; });
+      if (hex.test(v.navy)) pv.style.setProperty('--pv-navy', v.navy);
+      if (hex.test(v.blue)) pv.style.setProperty('--pv-blue', v.blue);
+      if (hex.test(v.teal)) pv.style.setProperty('--pv-tealtext', mix(v.teal, 0, .42));
+      if (hex.test(v.teal) && hex.test(v.blue)) pv.style.setProperty('--pv-grad', 'linear-gradient(90deg,' + mix(v.teal, 0, .2) + ',' + v.blue + ')');
+      var r = design.querySelector('input[name=buttons]:checked');
+      pv.style.setProperty('--pv-radius', r && r.value === 'rounded' ? '10px' : '4px');
+    }
+    design.querySelectorAll('input[type=color]').forEach(function (c) {
+      var t = design.querySelector('input[name=' + c.dataset.for + ']');
+      c.addEventListener('input', function () { t.value = c.value.toUpperCase(); paint(); });
+      t.addEventListener('input', function () { if (hex.test(t.value)) c.value = t.value; paint(); });
+    });
+    design.querySelectorAll('input[type=radio]').forEach(function (r) { r.addEventListener('change', paint); });
+    design.querySelectorAll('[data-confirm-click]').forEach(function (b) {
+      b.addEventListener('click', function (e) { if (!window.confirm(b.getAttribute('data-confirm-click'))) e.preventDefault(); });
+    });
+    paint();
+  }
+
   document.querySelectorAll('form[data-confirm]').forEach(function (f) {
     f.addEventListener('submit', function (e) { if (!window.confirm(f.getAttribute('data-confirm'))) e.preventDefault(); });
   });

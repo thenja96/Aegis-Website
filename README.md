@@ -70,6 +70,7 @@ A small PHP admin at `https://www.aegiscomm.com.my/aegis/` for changing text, pa
 | `aegis/data/manifest.php` | Written by `_src/build.py`: every editable text block and image, with its original wording. Upload it with every rebuild. |
 | `aegis/data/content.php` | Saved edits. Created by the backend. **Lives on the server; never overwrite it from a local copy without downloading it first.** |
 | `aegis/data/users.php`, `enquiries.php`, `attempts.php` | Admin account (password hashed), enquiries, sign-in attempt counter. Created on the server. |
+| `assets/theme.css` | Written by the backend's Design screen (colours, text size, heading font, button corners). Committed empty; `aegis/republish.php` rewrites it after every deploy. |
 | `aegis/data/setup.php` | One-time setup key, created on the server the first time `/aegis/` is opened. Deleted automatically once the admin account is created. |
 
 Every data file starts with a PHP exit line and the folder has `Require all denied`, so none of it can be read in a browser.
