@@ -28,7 +28,7 @@ function go(string $to, string $msg = '', string $kind = 'ok'): void {
 if (!$users) {
     $setup = store_read('setup', []);
     // first visit on a fresh install: create the one-time key on the server, never in the repository
-    if (empty($setup['key'])) { $setup = ['key' => bin2hex(random_bytes(12))]; store_write('setup', $setup); }
+    if (empty($setup['key'])) { $setup = ['key' => bin2hex(random_bytes(12))]; if (!store_write('setup', $setup)) $setup = []; }
     $err = '';
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && csrf_ok()) {
         $u = trim($_POST['user'] ?? '');
@@ -47,7 +47,7 @@ if (!$users) {
     }
     page_start('Set up', false);
     echo '<div class="auth"><h1>Set up the content backend</h1><p>Create the admin account. The setup key is in <code>aegis/data/setup.php</code> on the hosting (open it in the Plesk File Manager).</p>';
-    if (empty($setup['key'])) echo '<p class="msg err">No setup key found. Upload <code>aegis/data/setup.php</code> again.</p>';
+    if (empty($setup['key'])) echo '<p class="msg err">The setup key could not be created because PHP cannot write to the <code>aegis/data</code> folder. In Plesk File Manager, open its permissions and allow the site user to write to it, then reload this page.</p>';
     if ($err) echo '<p class="msg err">' . h($err) . '</p>';
     echo '<form method="post">' . csrf_field() . '
       <label>Setup key<input name="key" autocomplete="off" required></label>

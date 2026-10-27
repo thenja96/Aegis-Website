@@ -18,11 +18,11 @@ function store_read(string $name, $default = []) {
     return $v === null ? $default : $v;
 }
 
-function store_write(string $name, $data): void {
+function store_write(string $name, $data): bool {
     $f = DATA_DIR . "/$name.php";
     $tmp = $f . '.' . bin2hex(random_bytes(4)) . '.tmp';
-    file_put_contents($tmp, GUARD . json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
-    rename($tmp, $f);
+    if (@file_put_contents($tmp, GUARD . json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX) === false) return false;
+    return @rename($tmp, $f) || (@unlink($tmp) && false);
 }
 
 function manifest(): array {
