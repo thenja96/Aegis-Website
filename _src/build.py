@@ -72,7 +72,7 @@ def header(rel):
                          f'<ul class="sub"><li class="sub-label">{heading}</li>{links}</ul></li>')
         else:
             items.append(f'<li><a href="{rel}{href}">{label}</a></li>')
-    items.append(f'<li><a class="btn btn-primary" href="{rel}contact.html">Contact us</a></li>')
+    items.append(f'<li><a class="btn btn-primary" href="https://wa.me/60128631134" target="_blank" rel="noopener">WhatsApp us</a></li>')
     return f'''<a class="skip" href="#main">Skip to content</a>
 <header class="header">
   <div class="container">
@@ -88,7 +88,7 @@ def footer(rel, path, v=""):
     nxt = NEXT.get(path)
     nextlink = (f'<aside class="nextlink"><div class="container"><div><small>Next</small><a href="{rel}{nxt[1]}">{nxt[0]}</a></div>'
                 '</div></aside>') if nxt else ""
-    cta_bar = "" if path == "contact.html" else f'<div class="mobile-cta"><a class="btn btn-primary" href="{rel}contact.html">Contact us</a></div>'
+    cta_bar = "" if path == "contact.html" else f'<div class="mobile-cta"><a class="btn btn-primary" href="https://wa.me/60128631134" target="_blank" rel="noopener">WhatsApp us</a></div>'
     return f'''{nextlink}
 <footer class="footer">
   <div class="container">
@@ -285,7 +285,7 @@ def wrap(meta, body, rel):
 {SPRITE}
 {header(rel)}
 {subnav}
-{'<aside class="side-cta" aria-label="Contact"><a class="btn btn-primary sm" href="' + rel + 'contact.html">Contact us</a><a class="side-tel" href="tel:+60350231848">+603 5023 1848</a></aside>' if subnav else ''}
+{'<aside class="side-cta" aria-label="Contact"><a class="btn btn-primary sm" href="https://wa.me/60128631134" target="_blank" rel="noopener">WhatsApp us</a><a class="side-tel" href="tel:+60350231848">+603 5023 1848</a></aside>' if subnav else ''}
 <main id="main">
 {body.strip()}
 </main>
