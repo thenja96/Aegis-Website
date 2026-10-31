@@ -6,14 +6,13 @@ Static site for www.aegiscomm.com.my. Plain HTML, one stylesheet, one small scri
 
 | Path | What it is |
 |---|---|
-| `index.html`, `about.html`, `approach.html`, `track-record.html`, `contact.html`, `404.html`, `services/*.html` | Generated pages. Do not edit these directly. |
+| `index.html`, `about.html`, `approach.html`, `contact.html`, `404.html`, `services/*.html` | Generated pages. Do not edit these directly. |
 | `_src/pages/*.html` | Page content fragments. Edit copy here. |
 | `_src/build.py` | Wraps each fragment with the shared header, footer and meta tags, and writes `sitemap.xml` and `robots.txt`. |
 | `_src/tools/` | Scripts: `extract_pics.py` and `assets.py` pulled logos and photos from the decks; `diagrams.py` generates the inline SVG framework diagrams (run it, then build, after changing a diagram). |
 | `assets/fonts/` | Self-hosted Inter and Newsreader (latin subset). |
 | `assets/mark.svg`, `assets/favicon.svg`, `assets/og-image.png` | Brand motif used as watermark and bullets, favicon, and the link-preview image. |
 | `assets/style.css`, `assets/site.js` | Styles and behaviour. Colour tokens sit at the top of the stylesheet: slate text #0F172A, brand blue #0E6BB4, brand teal #1AB191, hairline #E2E8F0. |
-| `assets/clients/` | Client logos extracted from the Company Profile deck. |
 | `assets/photos/` | Event photos extracted from the decks. |
 | `assets/network/` | Media and investment-community logo composites from the deck. |
 | `contact.php` | Receives the contact form, emails aegis@aegiscomm.com.my and saves a copy to the backend's Enquiries. |
@@ -59,6 +58,12 @@ The code lives in the private repository https://github.com/thenja96/Aegis-Websi
 
 After changing pages locally: run `python _src/build.py`, commit, push, then press Deploy in Plesk.
 
+## Client confidentiality
+
+Client logos, client names and any photo showing a client's name were removed because of non-disclosure agreements. Do not add them back without written client consent. Event photos must not show a client's name on screens, backdrops or banners.
+
+The Track Record page is hidden. Its text is kept, without logos, in `_src/hidden/track-record.html`. To bring it back: move it to `_src/pages/`, add it back to `NAV`, `NEXT` and `footer()` in `_src/build.py`, remove its `RedirectMatch` line from `.htaccess`, then rebuild.
+
 ## Content backend (`/aegis`)
 
 A small PHP admin at `https://www.aegiscomm.com.my/aegis/` for changing text, page titles, image descriptions and images, and for reading contact-form enquiries. Nothing on the public site links to it. Content is stored in files, no database.
@@ -95,6 +100,5 @@ Every data file starts with a PHP exit line and the folder has `Require all deni
 ## Known gaps
 
 - Team photos: drop square head-and-shoulders JPGs (at least 600px) into `assets/team/` named `jason-fong.jpg`, `aden-then.jpg`, `ryan-low.jpg`, `cherise-lai.jpg`, `wong-seng-chun.jpg`, `kelly-cheah.jpg`, `janice-lee.jpg`. The People page picks them up automatically; initials show until a file exists. Bio lines for the four executives are placeholders describing their role areas and should be confirmed.
-- Six logos were low-resolution in the deck and may look soft on large screens: Chin Hin, Signature International, Paragon Globe, XL Holdings, Xin Hwa, Reach Energy. Replace the files in `assets/clients/` with better versions when available.
 - Phone numbers: the decks show 03-6413 0580 for both Executive Directors and 03-5023 1848 as the office line. Confirm which is current.
 - The Google Maps embed on the contact page needs an internet connection to render.

@@ -2,6 +2,9 @@
 ErrorDocument 404 /404.html
 Options -Indexes
 RedirectMatch 404 ^/(_src|_work|\.git)(/|$)
+# Hidden for now (client confidentiality). Restore steps are in README.md.
+RedirectMatch 404 ^/track-record\.html$
+RedirectMatch 404 ^/assets/clients(/|$)
 <FilesMatch "^(README\.md|\.gitignore|\.gitattributes)$">
   Require all denied
 </FilesMatch>

@@ -37,7 +37,6 @@ ABOUT = [
     ("About Aegis", "about.html"),
     ("Our People", "people.html"),
     ("Our Approach", "approach.html"),
-    ("Track Record", "track-record.html"),
 ]
 NAV = [
     ("Home", "index.html", None),
@@ -52,8 +51,7 @@ NEXT = {
     "services/public-relations.html": ("Event Management", "services/events.html"),
     "services/events.html": ("Creative, Content & Digital", "services/creative-digital.html"),
     "services/creative-digital.html": ("Our Approach", "approach.html"),
-    "approach.html": ("Track Record", "track-record.html"),
-    "track-record.html": ("About Aegis", "about.html"),
+    "approach.html": ("About Aegis", "about.html"),
     "about.html": ("Our People", "people.html"),
     "people.html": ("Contact", "contact.html"),
 }
@@ -111,7 +109,6 @@ def footer(rel, path, v=""):
         <h4>Company</h4>
         <ul>
           <li><a href="{rel}approach.html">Our Approach</a></li>
-          <li><a href="{rel}track-record.html">Track Record</a></li>
           <li><a href="{rel}about.html">About Aegis</a></li>
           <li><a href="{rel}people.html">Our People</a></li>
           <li><a href="{rel}contact.html">Contact</a></li>
