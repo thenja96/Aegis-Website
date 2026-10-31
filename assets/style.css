@@ -1202,3 +1202,8 @@ img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select
 /* Accent cards: one clean gradient line on square corners (was a blue border plus the gradient, on round corners) */
 .card.accent{border-top:1px solid var(--line-soft);border-radius:4px}
 .card.accent::before{height:2px;top:-1px;border-radius:0}
+
+/* a gallery with a single photo: show it large, no filmstrip */
+.photo-grid figure:only-child,.split .photo-grid figure:only-child{flex:0 1 860px}
+.photo-grid:has(figure:only-child){overflow:visible;margin-right:0;justify-content:center}
+.photo-grid figure:only-child:last-child{margin-right:0}
