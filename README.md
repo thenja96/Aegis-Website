@@ -60,7 +60,7 @@ After changing pages locally: run `python _src/build.py`, commit, push, then pre
 
 ## Client confidentiality
 
-Client logos and written client names were removed because of non-disclosure agreements. Do not add client lists or logo walls back without written consent. Management has decided that event photos may disclose a client indirectly (a name visible at the event, as in the IPO prospectus launch photo), but captions and image descriptions name the event type only, never the client. Confidential material on screens or documents is still blurred.
+Client logos and written client names stay off the site, and the Track Record must not name clients. Event photos may show clients (management decision), but captions and image descriptions name the event type only. Confidential slides on screens, and market cap, price and funds-raised figures, are still blurred.
 
 The Track Record page is hidden. Its text is kept, without logos, in `_src/hidden/track-record.html`. To bring it back: move it to `_src/pages/`, add it back to `NAV`, `NEXT` and `footer()` in `_src/build.py`, remove its `RedirectMatch` line from `.htaccess`, then rebuild.
 
