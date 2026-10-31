@@ -1198,3 +1198,7 @@ img{-webkit-user-drag:none;user-drag:none;-webkit-touch-callout:none;user-select
 }
 /* sections switched off in the backend */
 [hidden]{display:none !important}
+
+/* Accent cards: one clean gradient line on square corners (was a blue border plus the gradient, on round corners) */
+.card.accent{border-top:1px solid var(--line-soft);border-radius:4px}
+.card.accent::before{height:2px;top:-1px;border-radius:0}
